@@ -4,7 +4,7 @@
 
 # or instance selected objects, group and then randomize group 
 
-
+import string
 import pymel.core as pm
 import maya.cmds as cmds
 import random as rand
@@ -20,8 +20,6 @@ project = pm.workspace(q=True,act=True)
 scriptsFilePath = project + '/scripts'
 
 FilePath = []
-
-nameIncrements = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
 
 
 class EnviromentManagerWindow():
@@ -436,18 +434,27 @@ class EnviromentManagerWindow():
                 for x in list:
                     name = x.rpartition(searchString)[0] + searchString + replaceString
                     pm.rename(x,name)
-    def renameChain(self,*args):
-        
-        selectionList = pm.ls(sl=True)
-        i = 0
-        for object in selectionList:
-            name = object.rpartition('_')[0]
-            if name == '':
-                print 'empty'
-                pm.rename(object,object+'_'+nameIncrements[i]+'_01')
-            else:
-                pm.rename(object,name+'_'+nameIncrements[i]+'_01')
-            i = i + 1
+    def renameChain(self, *args):
+        """
+        Takes selected nodes and renames them:
+            1. With a basename defined by:
+            - the node name minus the last underscore and anything that follows ie: fiz_buz_bang --> fiz_buz
+            - OR if no underscore is present use the original name.  ie: fizBuzBang --> fizBuzBang
+            2. Followed by an ascii lower cased letter
+            3. Followed by '_01'
+
+        fiz_buz_bang | asdfQwer --> fiz_buz_a_01 | asdfQwer_b_01
+        :param args:
+        :return:
+        """
+        nodes = pm.ls(sl=True)
+
+        for i, node in enumerate(nodes):
+            prefix_name = node.rpartition('_')[0]
+            prefix_name = prefix_name if prefix_name else node
+            new_name = '{}_{}_01'.format(prefix_name, string.ascii_lowercase[i])
+            pm.rename(node, new_name)
+
     
     def quit(self,window, *args):
         pm.deleteUI(window)
